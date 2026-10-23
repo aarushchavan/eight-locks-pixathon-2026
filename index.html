@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#263b32">
+<title>Eight Locks — The Midnight Cipher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+:root{--ink:#302820;--cream:#f4e5bd;--paper:#e9d29a;--paper2:#d5b878;--wood:#5d3927;--wood2:#38251d;--moss:#617c4b;--leaf:#335843;--gold:#d49343;--red:#9e4c3e;--line:#4b3325;--shadow:#1a2825;--ok:#527b4d;--bad:#a6423e}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#172824;color:var(--ink);font:700 15px/1.45 Nunito,system-ui,sans-serif}
+button,input{font:inherit}button{cursor:pointer}.px,h1,h2,h3,.tag{font-family:Silkscreen,monospace}canvas{position:fixed;inset:0;width:100vw;height:100vh;image-rendering:pixelated}
+.panel{background:linear-gradient(#f5e7c0,#e4c98b);border:3px solid var(--line);box-shadow:0 5px 0 #241b16,0 0 0 2px #b98d54 inset;color:var(--ink)}
+#hud{position:fixed;z-index:5;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));width:min(330px,calc(100vw - 120px));padding:9px 12px}
+#hudTop{display:flex;justify-content:space-between;gap:8px;align-items:center}.tag{font-size:10px;color:#70533b}.meter{height:10px;margin-top:6px;border:2px solid var(--line);background:#5a4433}.meter i{display:block;height:100%;background:#d39a4b}.help{display:block;font-size:11px;color:#6e5844;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#actions{position:fixed;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));z-index:6;display:flex;gap:7px}.pixel-btn{border:3px solid var(--line);background:#e8d39c;color:#33251c;padding:8px 11px;box-shadow:0 4px 0 #261b15;font:700 11px Silkscreen,monospace}.pixel-btn:hover{background:#f7e9bf}.pixel-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #261b15}.pixel-btn.dark{background:#5f4936;color:#f5e7c0}.pixel-btn.danger{background:#a34e40;color:#fff1d1}.pixel-btn:focus-visible,input:focus-visible{outline:4px solid #f5bd51;outline-offset:2px}
+#toast{position:fixed;z-index:9;left:50%;top:max(86px,calc(env(safe-area-inset-top) + 70px));transform:translate(-50%,-8px);width:min(620px,92vw);padding:9px 14px;text-align:center;opacity:0;pointer-events:none;transition:.18s}.on#toast{opacity:1;transform:translate(-50%,0)}
+.overlay{position:fixed;z-index:20;inset:0;display:none;place-items:center;padding:20px;background:rgba(20,31,28,.78);backdrop-filter:blur(3px);overflow:auto}.overlay.on{display:grid}.card{width:min(760px,94vw);padding:22px 24px}.card h1,.card h2{margin:0 0 12px;color:#6d382d;line-height:1.25}.card h1{font-size:clamp(20px,4vw,34px)}.card p{margin:8px 0}.eyebrow{font:700 11px Silkscreen,monospace;color:#7d5837;text-transform:uppercase}.difficulty{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.difficulty button{min-height:96px;text-align:left}.difficulty b{display:block;margin-bottom:6px}.difficulty small{display:block;font:700 12px Nunito,sans-serif}.difficulty button.selected{background:#718451;color:#fff5d6;border-color:#31452f}.controls{padding:9px 11px;background:#c8aa6d;border:2px dashed #745339;font-size:12px;margin:12px 0}
+#chat{position:fixed;z-index:12;display:none;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(860px,96vw);max-height:47vh}.on#chat{display:grid;grid-template-columns:96px 1fr}.portrait{border-right:3px solid var(--line);display:grid;place-items:center;background:#b99358;min-height:154px}.face{width:54px;height:66px;position:relative;filter:drop-shadow(4px 5px 0 rgba(52,36,24,.35))}.face i{position:absolute;display:block}.face .hair{inset:2px 8px 34px;background:var(--npc);border:5px solid #35251d}.face .skin{inset:16px 10px 16px;background:#d5a57d;border:4px solid #35251d}.face .eyes{left:19px;top:31px;width:5px;height:5px;background:#2b211c;box-shadow:13px 0 #2b211c}.face .coat{left:5px;right:5px;bottom:0;height:25px;background:var(--npc);border:4px solid #35251d}.dialogue{min-width:0}.dialogue header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--line);padding:7px 10px}.dialogue header span{font:700 12px Silkscreen,monospace}.log{padding:9px 12px;overflow:auto;max-height:22vh;display:grid;gap:6px}.log p{margin:0}.log .you{color:#705d4b}.log b{font:700 10px Silkscreen,monospace;color:#6d382d}.askrow{display:flex;gap:7px;padding:8px;border-top:3px solid var(--line)}input{min-width:0;border:3px solid var(--line);background:#fff5d4;color:#302820;padding:8px 10px;border-radius:0}.askrow input{flex:1}
+#book{position:fixed;z-index:11;display:none;right:max(12px,env(safe-area-inset-right));top:max(62px,calc(env(safe-area-inset-top) + 54px));bottom:max(12px,env(safe-area-inset-bottom));width:min(390px,calc(100vw - 24px));padding:14px;overflow:auto}.on#book{display:block}#book h2{font-size:14px;color:#6d382d;margin:13px 0 7px}#book h2:first-child{margin-top:0}.case-meta{font-size:12px;color:#725c45;border-bottom:2px dashed #957247;padding-bottom:8px}.rules{margin:0;padding:0;list-style:none;display:grid;gap:6px}.rules li{background:#f8e9bd;border-left:5px solid #87613e;padding:6px 8px;font-size:13px}.rules li::before{content:"◆ ";color:#a04d3d}.people{display:grid;grid-template-columns:1fr 1fr;gap:5px}.people span{font-size:11px;border:2px solid #7b5b3c;padding:3px 5px;background:#dec68f}.people .talked{border-color:#8a6e3e}.people .got{border-color:var(--ok);color:#345833;background:#d7dfad}.people .dead{border-color:var(--bad);color:#8d342f;text-decoration:line-through}.empty{font-size:12px;color:#80694f;font-style:italic}
+#vaultForm{display:flex;gap:8px;margin:14px 0}#vaultForm input{flex:1;text-transform:uppercase;font:700 18px Silkscreen,monospace}.hint{font-size:12px;color:#735c43}.result{padding:9px 10px;background:#d2b878;border:2px dashed #765238;min-height:42px;margin-top:10px}
+@media(max-width:680px){#hud{width:calc(100vw - 132px)}.help{display:none}.difficulty{grid-template-columns:1fr}.difficulty button{min-height:72px}.on#chat{grid-template-columns:64px minmax(0,1fr)}.portrait{min-height:130px}.face{transform:scale(.78)}.people{grid-template-columns:1fr}.card{padding:17px}#vaultForm{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="world" aria-label="The village of Saltmere"></canvas>
+<section id="hud" class="panel" aria-live="polite"><div id="hudTop"><b id="clock" class="px">Dawn</b><span id="caseId" class="tag"></span></div><div class="meter"><i id="timebar"></i></div><small class="help">WASD move · Enter interact · Shift dash · Q sense · N journal · M sound</small></section>
+<nav id="actions"><button id="journalBtn" class="pixel-btn">Journal N</button><button id="soundBtn" class="pixel-btn dark" aria-label="Toggle sound">Sound on</button></nav>
+<div id="toast" class="panel" role="status"></div>
+<aside id="book" class="panel" aria-label="Detective journal"><h2>CASE FILE</h2><div id="bookMeta" class="case-meta"></div><h2>DISCOVERED RULES</h2><ul id="rules" class="rules"></ul><h2>PEOPLE OF INTEREST</h2><div id="people" class="people"></div><h2>EVIDENCE</h2><ul id="evidence" class="rules"></ul></aside>
+<section id="chat" class="panel" aria-label="Conversation"><div class="portrait"><div class="face"><i class="hair"></i><i class="skin"></i><i class="eyes"></i><i class="coat"></i></div></div><div class="dialogue"><header><span id="speaker"></span><button id="leave" class="pixel-btn dark">Leave Esc</button></header><div id="log" class="log" aria-live="polite"></div><div class="askrow"><input id="question" maxlength="180" placeholder="Ask about the case, town or lock…" autocomplete="off"><button id="ask" class="pixel-btn">Ask</button></div></div></section>
+<section id="intro" class="overlay on"><div class="card panel"><div class="eyebrow">A browser mystery by your team</div><h1>EIGHT LOCKS<br>THE MIDNIGHT CIPHER</h1><p>Archivist Elias Vance vanished after discovering someone was draining Saltmere’s harbour fund. His proof lies inside the clocktower vault, protected by a password that changes with every investigation.</p><p>Eight townsfolk each know one rule. Question them, grow your rule list, and deduce the password before the last bell.</p><div class="difficulty" role="group" aria-label="Difficulty"><button data-mode="easy" class="pixel-btn selected"><b>EASY</b><small>Direct clues · 5 attempts · no silencing</small></button><button data-mode="medium" class="pixel-btn"><b>MEDIUM</b><small>Veiled clues · 3 attempts · 4 days</small></button><button data-mode="hard" class="pixel-btn"><b>HARD</b><small>Cryptic clues · 2 attempts · 3 days</small></button></div><div class="controls">WASD / arrows — walk · Enter / E — talk or inspect · Shift — dash · Q — detective sense · N — journal</div><button id="start" class="pixel-btn danger">Begin new case</button></div></section>
+<section id="vault" class="overlay"><div class="card panel"><div class="eyebrow">Clocktower · Final lock</div><h2>Speak the password</h2><p>The brass mechanism waits. Wrong answers advance the final bell.</p><form id="vaultForm"><input id="password" maxlength="16" spellcheck="false" autocomplete="off" aria-label="Password"><button class="pixel-btn danger">Turn the lock</button></form><div id="vaultResult" class="result">The discovered rules are recorded in your journal.</div><p id="attemptText" class="hint"></p><button id="back" class="pixel-btn dark">Return to town</button></div></section>
+<section id="ending" class="overlay"><div id="endingCard" class="card panel"></div></section>
+<script>
+"use strict";
+const $=id=>document.getElementById(id), W=1280,H=900;
+const cv=$("world"),ctx=cv.getContext("2d"),off=document.createElement("canvas"),oc=off.getContext("2d");off.width=W;off.height=H;
+const MODES={easy:{label:"Easy",days:5,day:210,night:80,attempts:5,reveal:1,danger:false},medium:{label:"Medium",days:4,day:180,night:90,attempts:3,reveal:2,danger:true},hard:{label:"Hard",days:3,day:165,night:100,attempts:2,reveal:2,danger:true}};
+const WORDS=[
+ {w:"EMBER",cat:"a glowing remnant of fire",m:["easy"]},{w:"IVORY",cat:"a pale material once used for carvings",m:["easy"]},{w:"RAVEN",cat:"a black bird associated with secrets",m:["easy"]},{w:"CLOCK",cat:"an instrument that measures time",m:["easy"]},{w:"MAPLE",cat:"a tree known for its distinctive leaves",m:["easy"]},{w:"ORCHID",cat:"a flower with elaborate blooms",m:["easy","medium"]},{w:"ANCHOR",cat:"a heavy object that holds a vessel",m:["easy","medium"]},{w:"CIPHER",cat:"a secret system of writing",m:["medium"]},{w:"LANTERN",cat:"a portable light protected by a covering",m:["medium"]},{w:"COMPASS",cat:"an instrument that shows direction",m:["medium"]},{w:"VELVET",cat:"a fabric with a dense soft surface",m:["medium"]},{w:"HARBOR",cat:"a sheltered place where ships can dock",m:["medium"]},{w:"BLUEBELL",cat:"a woodland flower shaped like a bell",m:["hard"]},{w:"MIDNIGHT",cat:"the middle of the night",m:["hard"]},{w:"MARIGOLD",cat:"a bright orange or yellow flower",m:["hard"]},{w:"HOURGLASS",cat:"a glass instrument that measures time with sand",m:["hard"]},{w:"TELESCOPE",cat:"an instrument for viewing distant objects",m:["hard"]},{w:"NIGHTFALL",cat:"the time when daylight disappears",m:["hard"]}];
+const HOUSES=[
+ [70,90,220,190,"ARCHIVE","#ad6650"],[330,70,215,180,"GLASSHOUSE","#bd7456"],[700,75,220,185,"CLOCKWORKS","#a95e4e"],[980,95,220,190,"TAVERN","#b96b4e"],
+ [70,640,230,190,"BAKERY","#b9654e"],[365,665,210,170,"FERRY OFFICE","#9c5b49"],[710,650,220,180,"CLINIC","#ae6652"],[995,625,205,200,"KEEPER","#9f5947"]];
+const NPCS=[
+ {name:"Mira Quill",role:"archivist",color:"#6f4d77",home:0,topics:["book","archive","record","elias","case","password","lock"],hello:"You’re late, Detective. Records dislike being kept waiting."},
+ {name:"Elara Moss",role:"gardener",color:"#4f7c4e",home:1,topics:["flower","garden","glass","elias","case","password","lock"],hello:"Mind the seedlings. They remember every careless footstep."},
+ {name:"Orin Bell",role:"clockmaker",color:"#55738b",home:2,topics:["clock","time","gear","bell","elias","case","password","lock"],hello:"Every mechanism tells the truth if you listen long enough."},
+ {name:"Sable Reed",role:"musician",color:"#8b5062",home:3,topics:["song","music","sound","tavern","elias","case","password","lock"],hello:"A secret has rhythm, Rook. Even a locked one."},
+ {name:"Niko Crumb",role:"baker",color:"#a46b3c",home:4,topics:["bread","food","tea","bakery","elias","case","password","lock"],hello:"Questions first, pastry second. Or the other way around."},
+ {name:"Bram Tide",role:"ferryman",color:"#486a72",home:5,topics:["boat","water","harbour","ferry","elias","case","password","lock"],hello:"Fog carries words farther than people think."},
+ {name:"Dr. Iona Vale",role:"physician",color:"#6d7d69",home:6,topics:["doctor","injury","health","clinic","elias","case","password","lock"],hello:"I deal in evidence, not comforting stories."},
+ {name:"Captain Voss",role:"retired keeper",color:"#745b4e",home:7,topics:["tower","lamp","night","keeper","elias","case","password","lock"],hello:"The old tower has been awake longer than either of us."}
+];
+const EVIDENCE=[
+ {x:410,y:448,t:"A torn audit page lists repeated payments to a company with no address."},
+ {x:860,y:470,t:"Fresh cart tracks lead from Town Hall toward the clocktower."},
+ {x:560,y:560,t:"The well contains a brass seal stamped E.V.—Elias was here recently."},
+ {x:1030,y:520,t:"A sealed letter is addressed to the state prosecutor but was never posted."}
+];
+const TOWER={x:540,y:30,w:190,h:205};
+let mode="easy",cfg=MODES.easy,caseData=null,state="intro",phase="day",day=1,timeLeft=cfg.day,attempts=cfg.attempts,player={x:635,y:500},keys={},chat=null,spoken=new Set(),rulesFound=new Set(),evidenceFound=new Set(),today=[],toastTimer=0,last=0,zoom=2,audio=null,soundOn=true,stepClock=0,sense=0,senseCd=0;
+
+function hashSeed(){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]||Date.now()}
+function rngFactory(seed){let s=seed>>>0;return()=>((s=Math.imul(1664525,s)+1013904223>>>0)/4294967296)}
+function vowels(w){return [...w].filter(c=>"AEIOU".includes(c)).length}
+function buildCase(){
+ const seed=hashSeed(),rnd=rngFactory(seed),pool=WORDS.filter(x=>x.m.includes(mode)),entry=pool[Math.floor(rnd()*pool.length)],w=entry.w,mid=Math.floor(w.length/2),unique=[...new Set(w)],contain=unique.find(c=>!"AEIOU".includes(c)&&c!==w[0]&&c!==w.at(-1))||w[1];
+ const poetic=mode!=="easy";
+ const clues=[
+  {rule:`The password has exactly ${w.length} letters.`,say:poetic?`The lock was built with ${w.length} little chambers. One letter rests in each.`:`I counted it carefully: the password has exactly ${w.length} letters.`},
+  {rule:`Its first letter is ${w[0]}.`,say:poetic?`At the head of the procession stands the letter ${w[0]}.`:`The password begins with ${w[0]}.`},
+  {rule:`Its final letter is ${w.at(-1)}.`,say:poetic?`The last footprint it leaves is shaped like ${w.at(-1)}.`:`The password ends with ${w.at(-1)}.`},
+  {rule:`It contains exactly ${vowels(w)} vowel${vowels(w)===1?"":"s"}.`,say:poetic?`I heard ${vowels(w)} open note${vowels(w)===1?"":"s"} when Elias spoke it.`:`It contains exactly ${vowels(w)} vowel${vowels(w)===1?"":"s"}.`},
+  {rule:`It uses ${unique.length} different letters.`,say:poetic?`${unique.length} different marks were dusted in flour, though some may have returned.`:`The word uses ${unique.length} different letters.`},
+  {rule:`Letter ${mid+1} is ${w[mid]}.`,say:poetic?`At position ${mid+1}, the tide chart was marked ${w[mid]}.`:`The ${mid+1}${mid===1?"nd":mid===2?"rd":"th"} letter is ${w[mid]}.`},
+  {rule:`It contains the letter ${contain}.`,say:poetic?`One sound I cannot remove from it is ${contain}.`:`The letter ${contain} appears somewhere in it.`},
+  {rule:`It means ${entry.cat}.`,say:poetic?`Its meaning points to ${entry.cat}.`:`Elias described it as ${entry.cat}.`}
+ ];
+ return{seed,id:(seed>>>0).toString(16).toUpperCase().padStart(8,"0").slice(-6),entry,clues};
+}
+
+function px(c,x,y,w,h){oc.fillStyle=c;oc.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+function cobble(x,y,w,h){oc.save();oc.beginPath();oc.rect(x,y,w,h);oc.clip();px("#baa77a",x,y,w,h);for(let yy=0;yy<h;yy+=13)for(let xx=-18;xx<w;xx+=24){const ox=((yy/13)&1)*12,c=(xx+yy)%3?"#d0bd8f":"#9d926f";px(c,x+xx+ox+2,y+yy+2,20,9);px("#7e765e",x+xx+ox,y+yy,22,2)}oc.restore()}
+function flowers(x,y,w){for(let i=0;i<w;i+=8){px(i%16?"#e5c45a":"#bf5f62",x+i,y+(i%3)*2,4,4);px("#527442",x+i+1,y+4,2,5)}}
+function house([x,y,w,h,label,roof]){
+ px("rgba(24,30,25,.28)",x+12,y+18,w,h+22);px("#e6d3ab",x,y+48,w,h-48);px("#5a3b2b",x,y+48,w,7);for(let i=18;i<w;i+=44)px("#644331",x+i,y+48,7,h-48);px("#5a3b2b",x,y+h-8,w,8);
+ oc.fillStyle=roof;oc.beginPath();oc.moveTo(x-18,y+54);oc.lineTo(x+w/2,y);oc.lineTo(x+w+18,y+54);oc.closePath();oc.fill();
+ for(let r=0;r<6;r++)for(let i=0;i<10;i++){const tw=(w+36)/10;px((r+i)%3?"#c8785d":"#8e5146",x-18+i*tw+(r%2)*4,y+12+r*8,Math.ceil(tw)-2,6)}
+ px("#422d25",x+w/2-17,y+h-48,34,48);px("#77563b",x+w/2-10,y+h-39,20,39);px("#b9d3c1",x+22,y+85,35,30);px("#493429",x+18,y+81,43,5);px("#493429",x+36,y+82,5,34);if(w>205){px("#b9d3c1",x+w-57,y+85,35,30);px("#493429",x+w-61,y+81,43,5);px("#493429",x+w-43,y+82,5,34)}
+ flowers(x+15,y+120,58);flowers(x+w-72,y+120,58);px("#493126",x+w/2-55,y+57,110,20);oc.fillStyle="#f5e5bb";oc.font="10px Silkscreen";oc.textAlign="center";oc.fillText(label,x+w/2,y+71);oc.textAlign="left";
+}
+function tree(x,y,s=1){px("#553b2b",x-5*s,y,10*s,24*s);const blobs=[[-16,-10,19,"#294d38"],[10,-14,22,"#315b3d"],[-2,-28,24,"#3e6b43"],[17,-31,15,"#557d48"],[-19,-32,16,"#6f9154"]];for(const [dx,dy,r,c] of blobs){oc.fillStyle=c;oc.beginPath();oc.arc(x+dx*s,y+dy*s,r*s,0,Math.PI*2);oc.fill()}}
+function buildMap(){
+ px("#547349",0,0,W,H);for(let i=0;i<1800;i++){const x=(i*83)%W,y=(i*47)%H;px(i%3?"#668456":"#405f42",x,y,3,2)}
+ cobble(545,215,185,500);cobble(250,360,780,175);cobble(485,485,300,95);oc.fillStyle="#bca97d";oc.beginPath();oc.arc(635,485,195,0,Math.PI*2);oc.fill();
+ for(let y=320;y<650;y+=18)for(let x=470;x<810;x+=30){if(Math.hypot(x-635,y-485)<190)px((x+y)%4?"#cbb98d":"#9f9472",x+(y%2?9:0),y,25,12)}
+ HOUSES.forEach(house);
+ // clocktower
+ px("rgba(25,28,25,.3)",TOWER.x+14,TOWER.y+20,TOWER.w,TOWER.h+18);px("#d8c39b",TOWER.x,TOWER.y+55,TOWER.w,TOWER.h-55);px("#584034",TOWER.x,TOWER.y+55,TOWER.w,8);px("#8e5146",TOWER.x-20,TOWER.y+55,TOWER.w+40,25);oc.fillStyle="#a75d4a";oc.beginPath();oc.moveTo(TOWER.x-15,TOWER.y+55);oc.lineTo(TOWER.x+TOWER.w/2,TOWER.y);oc.lineTo(TOWER.x+TOWER.w+15,TOWER.y+55);oc.closePath();oc.fill();px("#30302b",TOWER.x+75,TOWER.y+88,40,40);px("#e8d6a1",TOWER.x+81,TOWER.y+94,28,28);oc.strokeStyle="#4b3729";oc.lineWidth=4;oc.beginPath();oc.arc(TOWER.x+95,TOWER.y+108,16,0,7);oc.moveTo(TOWER.x+95,TOWER.y+108);oc.lineTo(TOWER.x+95,TOWER.y+98);oc.moveTo(TOWER.x+95,TOWER.y+108);oc.lineTo(TOWER.x+104,TOWER.y+112);oc.stroke();px("#4a3025",TOWER.x+74,TOWER.y+160,42,45);flowers(TOWER.x+10,TOWER.y+196,55);flowers(TOWER.x+125,TOWER.y+196,55);
+ // well, wagon, barrels and beds
+ px("#514137",595,465,82,15);px("#928776",603,443,66,27);px("#3e7280",612,448,48,13);px("#5f4530",607,430,7,18);px("#5f4530",660,430,7,18);px("#5f4530",607,428,60,6);
+ px("#6c462d",830,504,82,32);px("#b68048",838,490,66,18);px("#33261f",840,532,16,16);px("#33261f",886,532,16,16);
+ for(const [x,y] of [[310,325],[875,325],[315,555],[890,565],[38,540],[1210,540]]){px("#704b30",x,y,20,30);px("#3f2d23",x-2,y+8,24,4)}
+ flowers(300,340,95);flowers(850,346,105);flowers(330,585,90);flowers(835,590,110);
+ [[25,290,1.2],[1235,300,1.25],[30,600,1.35],[1230,590,1.3],[335,610,.9],[930,610,.9],[315,65,.9],[950,70,.9]].forEach(t=>tree(...t));
+}
+buildMap();
+
+const obstacles=[...HOUSES.map(h=>[h[0]-8,h[1],h[2]+16,h[3]]),[TOWER.x-10,TOWER.y,TOWER.w+20,TOWER.h]];
+NPCS.forEach((n,i)=>{const h=HOUSES[n.home];n.homeX=h[0]+h[2]/2;n.homeY=i<4?h[1]+h[3]+26:h[1]-22;n.x=n.homeX;n.y=n.homeY;n.dead=false;n.searched=false;n.turn=Math.random()*9});
+function blocked(x,y){const r=[x-8,y-9,16,10];return x<15||x>W-15||y<20||y>H-15||obstacles.some(o=>r[0]<o[0]+o[2]&&r[0]+r[2]>o[0]&&r[1]<o[1]+o[3]&&r[1]+r[3]>o[1])}
+function resize(){zoom=innerWidth<760?1:2;cv.width=Math.ceil(innerWidth/zoom);cv.height=Math.ceil(innerHeight/zoom);ctx.imageSmoothingEnabled=false}addEventListener("resize",resize);resize();
+
+const VF=[330,440,520,260,200,360,150,180],VT=["triangle","sine","square","sawtooth","square","triangle","sawtooth","sine"];let stepT=0;
+class Snd{
+ constructor(){this.c=null;this.m=0;this.mode="day";this.iv=null}
+ init(){if(!this.c){const A=window.AudioContext||window.webkitAudioContext;if(!A)return;this.c=new A();this.out=this.c.createGain();this.out.gain.value=this.m?0:1;this.out.connect(this.c.destination)}if(this.c.state==="suspended")this.c.resume()}
+ tone(f,d,ty,v,at,f2,a){if(!this.c)return;const c=this.c,t=c.currentTime+(at||0),o=c.createOscillator(),g=c.createGain();o.type=ty||"sine";o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v||.05,t+(a||Math.min(.03,d/4)));g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(this.out);o.start(t);o.stop(t+d+.05)}
+ mute(){this.m=!this.m;if(this.out)this.out.gain.value=this.m?0:1;return this.m}
+ step(){this.tone(80+Math.random()*40,.08,"triangle",.05)}
+ blip(f){this.tone(f||260+Math.random()*120,.05,"square",.02)}
+ voice(i){const f=VF[i]||300,t=VT[i]||"sine";this.tone(f,.12,t,.05);this.tone(f*1.25,.14,t,.05,.1)}
+ open(){[220,261.63,329.63,440,329.63,659.25].forEach((f,i)=>this.tone(f,.6,"triangle",.06,i*.16));this.tone(110,1.6,"sine",.05,.1)}
+ dawn(){this.mode="day";[523.25,659.25,783.99,1046.5].forEach((f,i)=>this.tone(f,.9,"sine",.05,i*.2));[261.63,329.63,392].forEach(f=>this.tone(f,2.4,"sine",.025,.1))}
+ dusk(){this.mode="night";this.tone(440,1.8,"sine",.05,0,196);this.tone(233.08,2.6,"triangle",.04,.2);this.tone(329.63,2.6,"sine",.03,.2);this.tone(55,3,"sawtooth",.02)}
+ murder(){this.tone(70,.7,"sine",.18,0,35);this.tone(311.13,1,"sawtooth",.05,.05);this.tone(329.63,1,"sawtooth",.05,.05);this.tone(900,.6,"square",.03,.1,180)}
+ clue(){this.tone(659.25,.2,"triangle",.06);this.tone(880,.2,"triangle",.06,.1);this.tone(1318.5,.5,"sine",.06,.2)}
+ wrong(){this.tone(110,.4,"sawtooth",.1);this.tone(104,.4,"square",.04,.12)}
+ win(){clearInterval(this.iv);this.iv=null;[523.25,659.25,783.99,1046.5,783.99,1046.5,1318.5].forEach((f,i)=>this.tone(f,.35,"triangle",.07,i*.16));[523.25,659.25,783.99,1046.5].forEach(f=>this.tone(f,2,"sine",.04,1.2))}
+ lose(){clearInterval(this.iv);this.iv=null;this.tone(220,.9,"sawtooth",.07,0,110);this.tone(110,1.8,"sine",.1,.3,55)}
+ amb(){if(this.iv||!this.c)return;const D=[[220,261.63,329.63],[174.61,220,261.63],[130.81,164.81,196],[196,246.94,293.66]],N=[[196,233.08,277.18],[185,220,261.63],[164.81,196,233.08],[174.61,207.65,246.94]];let k=0;
+  const pl=()=>{const n=this.mode==="night";(n?N:D)[k++%4].forEach((f,i)=>this.tone(f,4.5,"sine",n?.018:.014,i*.2,0,1.2))};pl();this.iv=setInterval(pl,4500)}
+}
+const snd=new Snd();
+function initAudio(){snd.init()}
+function foot(){snd.step()}
+function chirp(){snd.blip()}
+function clueSound(){snd.clue()}
+function typeText(node,txt,i){let k=0;const f=VF[i]||300;const iv=setInterval(()=>{k++;node.textContent=txt.slice(0,k);if(k%2===0)snd.blip(f*(.9+Math.random()*.2));$("log").scrollTop=99999;if(k>=txt.length)clearInterval(iv)},24)}
+
+
+function toast(s){$("toast").textContent=s;$("toast").classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.remove("on"),4200)}
+function toggleBook(force){$("book").classList.toggle("on",force===undefined?!$("book").classList.contains("on"):force)}
+function renderBook(){
+ $("bookMeta").textContent=`Case ${caseData.id} · ${cfg.label} · Day ${Math.min(day,cfg.days)}/${cfg.days} · ${attempts} attempt${attempts===1?"":"s"}`;
+ $("rules").innerHTML="";caseData.clues.forEach((c,i)=>{if(rulesFound.has(i)){const li=document.createElement("li");li.textContent=c.rule;$("rules").append(li)}});if(!rulesFound.size)$("rules").innerHTML='<li class="empty">No rules confirmed. Question the townsfolk.</li>';
+ $("people").innerHTML="";NPCS.forEach((n,i)=>{const s=document.createElement("span");s.textContent=`${n.dead?"† ":rulesFound.has(i)?"◆ ":spoken.has(i)?"✓ ":""}${n.name}`;s.className=n.dead?"dead":rulesFound.has(i)?"got":spoken.has(i)?"talked":"";$("people").append(s)});
+ $("evidence").innerHTML="";EVIDENCE.forEach((e,i)=>{if(evidenceFound.has(i)){const li=document.createElement("li");li.textContent=e.t;$("evidence").append(li)}});if(!evidenceFound.size)$("evidence").innerHTML='<li class="empty">No physical evidence recorded.</li>';
+}
+function near(){let best=null,dist=46;NPCS.forEach((n,i)=>{const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<dist){dist=d;best={type:"npc",n,i,x:n.x,y:n.y}}});EVIDENCE.forEach((e,i)=>{const d=Math.hypot(e.x-player.x,e.y-player.y);if(d<dist){dist=d;best={type:"evidence",e,i,x:e.x,y:e.y}}});const door={x:TOWER.x+95,y:TOWER.y+220};if(Math.hypot(door.x-player.x,door.y-player.y)<dist)best={type:"vault",x:door.x,y:door.y};return best}
+function addLine(who,text,cls=""){const p=document.createElement("p");p.className=cls;const b=document.createElement("b");b.textContent=who+": ";p.append(b,document.createTextNode(text));$("log").append(p);$("log").scrollTop=99999;chirp();return p}
+function openChat(n,i){if(n.dead){if(!n.searched){n.searched=true;reveal(i,`A note in ${n.name}’s pocket confirms a rule.`)}else toast("You already searched this place.");return}if(phase==="night"){toast(`${n.name} has locked the door for the night.`);return}spoken.add(i);if(!today.includes(i))today.push(i);chat={n,i,count:0,history:[],busy:false};$("speaker").textContent=`${n.name} · ${n.role}`;$("chat").style.setProperty("--npc",n.color);$("log").innerHTML="";addLine(n.name,n.hello);snd.voice(i);$("chat").classList.add("on");$("question").value="";$("question").focus();renderBook()}
+function closeChat(){chat=null;$("chat").classList.remove("on");$("question").blur()}
+function reveal(i,prefix="Rule confirmed."){if(rulesFound.has(i))return;rulesFound.add(i);clueSound();toast(`${prefix} ${caseData.clues[i].rule}`);renderBook()}
+function localReply(n,q,count){const low=q.toLowerCase(),clue=caseData.clues[NPCS.indexOf(n)];if(low.includes("who")&&low.includes("did"))return"Suspicion is not proof. Look at the audit trail and the tracks near the square.";if(low.includes("elias"))return"Elias was frightened, but methodical. He divided the truth so no single person could betray it.";if(low.includes("town"))return"Saltmere smiles in daylight and counts its debts after dark.";if(low.includes("you"))return`${n.role[0].toUpperCase()+n.role.slice(1)} is my trade. Keeping Elias’s confidence was my mistake.`;if(count>=cfg.reveal||n.topics.some(t=>low.includes(t)))return clue.say;return mode==="hard"?"Ask with greater care. A useful question names the lock, Elias, or my work.":"I know one rule, Detective. Ask me about Elias or the clocktower lock."}
+async function ask(){if(!chat||chat.busy)return;const q=$("question").value.trim();if(!q)return;$("question").value="";const c=chat,n=c.n,i=c.i;c.count++;addLine("You",q,"you");c.busy=true;const wait=addLine(n.name,"…");let reply="";const shouldReveal=c.count>=cfg.reveal||n.topics.some(t=>q.toLowerCase().includes(t));
+ reply=localReply(n,q,c.count);
+ const fin=(reply||localReply(n,q,c.count)).trim();snd.voice(i);typeText(wait.lastChild,fin,i);c.history.push(`Detective: ${q}`,`${n.name}: ${reply}`);c.busy=false;if(shouldReveal&&!rulesFound.has(i)){setTimeout(()=>{addLine(n.name,caseData.clues[i].say);reveal(i,`${n.name} gave you a rule.`)},220)}
+}
+function interact(){if(chat)return;const x=near();if(!x)return toast("Nothing close enough to inspect.");if(x.type==="npc")openChat(x.n,x.i);else if(x.type==="evidence"){if(!evidenceFound.has(x.i)){evidenceFound.add(x.i);clueSound();renderBook()}toast(x.e.t)}else openVault()}
+function openVault(){state="vault";closeChat();$("vaultResult").textContent="The discovered rules are recorded in your journal.";$("attemptText").textContent=`${attempts} attempt${attempts===1?"":"s"} remain.`;$("password").value="";$("vault").classList.add("on");setTimeout(()=>$("password").focus(),50)}
+function submitPassword(e){e.preventDefault();const guess=$("password").value.trim().toUpperCase().replace(/[^A-Z]/g,"");if(!guess)return;if(guess===caseData.entry.w)return end(true);attempts--;snd.wrong();if(attempts<=0)return end(false);let matches=0;const w=caseData.entry.w;if(guess.length===w.length)matches++;if(guess[0]===w[0])matches++;if(guess.at(-1)===w.at(-1))matches++;$("vaultResult").textContent=`The mechanism rejects it. ${matches} of 3 basic lock checks responded.`;$("attemptText").textContent=`${attempts} attempt${attempts===1?"":"s"} remain.`}
+function end(won){state="end";won?snd.win():snd.lose();$("vault").classList.remove("on");const h=won?"CASE CLOSED":"THE LAST BELL";const text=won?`The word ${caseData.entry.w} turns every lock. Inside, Elias’s ledger exposes Mayor Holt’s shell company. At dawn, Saltmere finally knows the truth.`:`The vault seals before you can recover Elias’s ledger. The password was ${caseData.entry.w}. Review the rules, then open a fresh case.`;$("endingCard").innerHTML=`<div class="eyebrow">Case ${caseData.id}</div><h2>${h}</h2><p>${text}</p><p class="hint">Rules found: ${rulesFound.size}/8 · Evidence found: ${evidenceFound.size}/${EVIDENCE.length}</p><button id="again" class="pixel-btn danger">Generate another case</button>`;$("ending").classList.add("on");$("again").onclick=resetGame}
+function night(){snd.dusk();phase="night";timeLeft=cfg.night;closeChat();toast("Night settles over Saltmere. Doors close until dawn.")}
+function dawn(){const before=NPCS.filter(n=>n.dead).length;if(cfg.danger){let target=[...today].reverse().find(i=>!NPCS[i].dead);if(target!==undefined){NPCS[target].dead=true;snd.murder();setTimeout(()=>snd.dawn(),1900);toast(`${NPCS[target].name} has vanished. Search their doorway for the clue.`)}}today=[];day++;if(day>cfg.days)return end(false);if(NPCS.filter(n=>n.dead).length===before)snd.dawn();phase="day";timeLeft=cfg.day;renderBook()}
+function resetGame(){caseData=buildCase();cfg=MODES[mode];state="play";phase="day";day=1;timeLeft=cfg.day;attempts=cfg.attempts;player={x:635,y:500};spoken.clear();rulesFound.clear();evidenceFound.clear();today=[];NPCS.forEach(n=>{n.dead=false;n.searched=false;n.x=n.homeX;n.y=n.homeY});EVIDENCE.forEach(e=>e.seen=false);$("ending").classList.remove("on");$("vault").classList.remove("on");$("intro").classList.remove("on");$("caseId").textContent=`CASE ${caseData.id}`;renderBook();snd.mode="day";snd.amb();toast("A new password has been generated. Find the eight rules.")}
+
+function person(x,y,color,dead=false,bob=0){ctx.save();ctx.translate(Math.round(x),Math.round(y+bob));if(dead){ctx.fillStyle=color;ctx.fillRect(-13,-5,25,8);ctx.fillStyle="#d4a37d";ctx.fillRect(11,-5,8,7);ctx.restore();return}ctx.fillStyle="rgba(24,28,24,.28)";ctx.fillRect(-10,0,20,5);ctx.fillStyle="#31261f";ctx.fillRect(-7,-8,5,10);ctx.fillRect(2,-8,5,10);ctx.fillStyle=color;ctx.fillRect(-9,-23,18,16);ctx.fillStyle="#d4a37d";ctx.fillRect(-7,-34,14,12);ctx.fillStyle=color;ctx.fillRect(-9,-37,18,6);ctx.fillStyle="#211b18";ctx.fillRect(-4,-30,2,2);ctx.fillRect(3,-30,2,2);ctx.restore()}
+function draw(ts){const t=ts/1000,vw=cv.width,vh=cv.height,cx=Math.round(Math.max(0,Math.min(W-vw,player.x-vw/2))),cy=Math.round(Math.max(0,Math.min(H-vh,player.y-vh/2)));ctx.fillStyle="#172824";ctx.fillRect(0,0,vw,vh);ctx.save();ctx.translate(-cx,-cy);ctx.drawImage(off,0,0);
+ EVIDENCE.forEach((e,i)=>{if(!evidenceFound.has(i)){ctx.fillStyle="#f1c35b";ctx.fillRect(e.x-3,e.y-20+Math.sin(t*4+i)*2,6,6);if(sense>0){ctx.font="14px Silkscreen";ctx.fillText("?",e.x-5,e.y-28)}}});
+ const sprites=NPCS.map((n,i)=>({y:n.y,draw:()=>{person(n.x,n.y,n.color,n.dead,Math.sin(t*2+n.turn)*1.5);if(sense>0&&!rulesFound.has(i)){ctx.fillStyle="#f3c557";ctx.font="16px Silkscreen";ctx.fillText("!",n.x-5,n.y-44)}}}));sprites.push({y:player.y,draw:()=>person(player.x,player.y,"#6c4a36",false,0)});sprites.sort((a,b)=>a.y-b.y).forEach(s=>s.draw());
+ const n=near();if(n&&!chat&&state==="play"){const label=n.type==="npc"?(n.n.dead?"ENTER SEARCH":"ENTER TALK"):n.type==="vault"?"ENTER VAULT":"ENTER INSPECT";ctx.font="9px Silkscreen";const tw=ctx.measureText(label).width+14;ctx.fillStyle="#f0dfad";ctx.fillRect(n.x-tw/2,n.y-57,tw,16);ctx.strokeStyle="#4b3325";ctx.strokeRect(n.x-tw/2,n.y-57,tw,16);ctx.fillStyle="#3a2a21";ctx.fillText(label,n.x-tw/2+7,n.y-46)}
+ if(sense>0){ctx.strokeStyle="#e8bb55";ctx.lineWidth=3;ctx.globalAlpha=.65;ctx.beginPath();ctx.arc(player.x,player.y-10,(3-sense)*115,0,7);ctx.stroke();ctx.globalAlpha=1}ctx.restore();
+ if(phase==="night"&&state==="play"){const grad=ctx.createRadialGradient(vw/2,vh/2,55,vw/2,vh/2,320);grad.addColorStop(0,"rgba(19,30,46,.12)");grad.addColorStop(1,"rgba(9,18,34,.72)");ctx.fillStyle=grad;ctx.fillRect(0,0,vw,vh)}
+}
+function updateHud(){$("clock").textContent=state==="play"?`${phase==="day"?"DAY":"NIGHT"} ${Math.min(day,cfg.days)}/${cfg.days} · ${Math.floor(timeLeft/60)}:${String(Math.floor(timeLeft%60)).padStart(2,"0")}`:"CASE PAUSED";$("timebar").style.width=`${Math.max(0,timeLeft/(phase==="day"?cfg.day:cfg.night)*100)}%`;$("timebar").style.background=phase==="day"?"#d49343":"#607492"}
+function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;if(state==="play"&&!chat){let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);if(dx||dy){const l=Math.hypot(dx,dy),speed=(keys.shift?245:135)*dt,nx=player.x+dx/l*speed,ny=player.y+dy/l*speed;if(!blocked(nx,player.y))player.x=nx;if(!blocked(player.x,ny))player.y=ny;stepClock-=dt;if(stepClock<=0){foot();stepClock=keys.shift?.16:.28}}timeLeft-=dt;if(timeLeft<=0)phase==="day"?night():dawn()}sense=Math.max(0,sense-dt);senseCd=Math.max(0,senseCd-dt);updateHud();draw(ts);requestAnimationFrame(loop)}
+
+addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(document.activeElement.tagName==="INPUT"){if(k==="escape"){document.activeElement.blur();if(chat)closeChat()}return}if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();keys[k]=true;if(k==="n")toggleBook();if(k==="m")$("soundBtn").click();if((k==="enter"||k==="e")&&state==="play")interact();if(k==="q"&&state==="play"&&senseCd<=0){sense=3;senseCd=7;tone(220,.18,"sine",.02);toast("Detective sense highlights unchecked people and evidence.")}if(k==="escape")closeChat()});addEventListener("keyup",e=>delete keys[e.key.toLowerCase()]);
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("selected",x===b))});
+$("start").onclick=()=>{initAudio();resetGame();snd.open()};$("journalBtn").onclick=()=>toggleBook();$("soundBtn").onclick=()=>{initAudio();soundOn=!snd.mute();$("soundBtn").textContent=soundOn?"Sound on":"Sound off"};$("leave").onclick=closeChat;$("ask").onclick=ask;$("question").onkeydown=e=>{if(e.key==="Enter")ask()};$("vaultForm").onsubmit=submitPassword;$("back").onclick=()=>{$("vault").classList.remove("on");state="play"};
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
